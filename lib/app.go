@@ -106,6 +106,7 @@ func NewRestAppChart(scope constructs.Construct, id string, props *RestAppChartP
 				{
 					Hosts: jsii.Strings(props.Domain),
 					Port: &networkingistioio.GatewaySpecServersPort{
+						Name:     jsii.String("http"),
 						Protocol: jsii.String("http"),
 						Number:   jsii.Number(80),
 					},
