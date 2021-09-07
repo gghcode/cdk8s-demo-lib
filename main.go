@@ -30,6 +30,13 @@ func NewMyChart(scope constructs.Construct, id string, props *MyChartProps) cdk8
 
 func main() {
 	app := cdk8s.NewApp(nil)
-	NewMyChart(app, "go-cdk8s-demo", nil)
+	// lib.NewRestAppChart(app, "app", &lib.RestAppChartProps{
+	// 	Name:            "nginx",
+	// 	Image:           "nginx",
+	// 	Replicas:        3,
+	// 	Port:            80,
+	// 	HealthCheckPath: "/",
+	// })
+	// NewMyChart(app, "go-cdk8s-demo", nil)
 	app.Synth()
 }
