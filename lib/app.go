@@ -5,6 +5,7 @@ import (
 	"github.com/aws/jsii-runtime-go"
 	"github.com/cdk8s-team/cdk8s-core-go/cdk8s"
 	"github.com/gghcode/cdk8s-demo-lib/imports/k8s"
+	"github.com/gghcode/cdk8s-demo-lib/imports/networkingistioio"
 )
 
 type RestAppChartProps struct {
@@ -16,6 +17,8 @@ type RestAppChartProps struct {
 	Replicas float64
 
 	HealthCheckPath string
+
+	Domain string
 }
 
 func NewRestAppChart(scope constructs.Construct, id string, props *RestAppChartProps) cdk8s.Chart {
@@ -89,6 +92,47 @@ func NewRestAppChart(scope constructs.Construct, id string, props *RestAppChartP
 				{
 					Port:       &props.Port,
 					TargetPort: k8s.IntOrString_FromNumber(&props.Port),
+				},
+			},
+		},
+	})
+
+	networkingistioio.NewGateway(chart, jsii.String("gw"), &networkingistioio.GatewayProps{
+		Metadata: &cdk8s.ApiObjectMetadata{
+			Name: &props.Name,
+		},
+		Spec: &networkingistioio.GatewaySpec{
+			Servers: &[]*networkingistioio.GatewaySpecServers{
+				{
+					Hosts: jsii.Strings(props.Domain),
+					Port: &networkingistioio.GatewaySpecServersPort{
+						Protocol: jsii.String("http"),
+						Number:   jsii.Number(80),
+					},
+				},
+			},
+		},
+	})
+
+	networkingistioio.NewVirtualService(chart, jsii.String("vs"), &networkingistioio.VirtualServiceProps{
+		Metadata: &cdk8s.ApiObjectMetadata{
+			Name: &props.Name,
+		},
+		Spec: &networkingistioio.VirtualServiceSpec{
+			Gateways: jsii.Strings(props.Name),
+			Hosts:    jsii.Strings(props.Domain),
+			Http: &[]*networkingistioio.VirtualServiceSpecHttp{
+				{
+					Route: &[]*networkingistioio.VirtualServiceSpecHttpRoute{
+						{
+							Destination: &networkingistioio.VirtualServiceSpecHttpRouteDestination{
+								Host: &props.Name,
+								Port: &networkingistioio.VirtualServiceSpecHttpRouteDestinationPort{
+									Number: jsii.Number(props.Port),
+								},
+							},
+						},
+					},
 				},
 			},
 		},
